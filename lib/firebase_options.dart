@@ -46,7 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '3307252804',
     projectId: 'mon-premier-formulaire-e97f5',
     authDomain: 'mon-premier-formulaire-e97f5.firebaseapp.com',
-    storageBucket: 'mon-premier-formulaire-e97f5.firebasestorage.app',
+    storageBucket: 'mon-premier-formulaire-e97f5.appspot.com',
     measurementId: 'G-EXT77Y8MRF',
   );
 

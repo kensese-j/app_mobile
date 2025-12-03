@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+// ignore: unused_import
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -65,15 +68,7 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    try {
-      debugPrint('Attempting to logout user: ${_auth.currentUser?.uid}');
-      await _auth.signOut();
-      debugPrint('User logged out successfully');
-    } catch (e) {
-      debugPrint('Error during logout: $e');
-      throw 'Erreur lors de la déconnexion';
-    }
-  }
+      await _auth.signOut();}
 
   // Password reset functionality
   Future<void> sendPasswordResetEmail(String email) async {
@@ -142,6 +137,53 @@ class AuthService {
       throw 'Une erreur inattendue s\'est produite lors de la suppression du compte';
     }
   }
+  Future<void> saveUserData(User user) async {
+  final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+  final doc = await userRef.get();
+  if (!doc.exists) {
+    await userRef.set({
+      'uid': user.uid,
+      'email': user.email,
+      'name': user.displayName,
+      'photoURL': user.photoURL,
+      'provider': user.providerData.isNotEmpty ? user.providerData[0].providerId : null,
+      'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+  Future<User?> signInWithGoogle() async {
+  try {
+    final googleProvider = GoogleAuthProvider();
+
+    final userCredential = await _auth.signInWithPopup(googleProvider);
+    final user = userCredential.user;
+
+    if (user != null) await saveUserData(user);
+
+    return user;
+    } catch (e) {
+    debugPrint('Google Sign-In error: $e');
+    return null;
+    }
+  }
+Future<User?> signInWithGithub() async {
+  try {
+    final githubProvider = GithubAuthProvider();
+
+    final userCredential = await _auth.signInWithPopup(githubProvider);
+    final user = userCredential.user;
+
+    if (user != null) await saveUserData(user);
+
+    return user;
+    } catch (e) {
+    debugPrint('GitHub Sign-In error: $e');
+    return null;
+     }
+  }
+
+
 
   // Check if user is logged in
   bool get isLoggedIn => _auth.currentUser != null;
